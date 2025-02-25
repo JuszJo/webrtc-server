@@ -368,24 +368,24 @@ class SignalingServer {
 }
 
 // Create and start a server instance when this file is run directly
-if (require.main === module) {
-    const PORT = parseInt(process.env.PORT || '8080', 10);
+if (import.meta.url === `file://${process.argv[1]}`) {
+    const PORT = parseInt(process.env.PORT || "8080", 10);
     const server = new SignalingServer(PORT);
-    
+
     server.start().catch((error) => {
         console.error(`Failed to start signaling server: ${error}`);
         process.exit(1);
     });
-    
+
     // Handle graceful shutdown
     const shutdown = () => {
-        console.log('Shutting down gracefully...');
+        console.log("Shutting down gracefully...");
         server.stop();
         process.exit(0);
     };
-    
-    process.on('SIGINT', shutdown);
-    process.on('SIGTERM', shutdown);
+
+    process.on("SIGINT", shutdown);
+    process.on("SIGTERM", shutdown);
 }
 
 // Export the class for use in other files

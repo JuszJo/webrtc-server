@@ -35,6 +35,7 @@ class SignalingServer {
     private clients: Map<string, SignalClient> = new Map();
     private heartbeatInterval: NodeJS.Timeout | null = null;
     private port: number;
+    private waitingClient: SignalClient
 
     /**
      * Create a new signaling server
@@ -167,12 +168,27 @@ class SignalingServer {
         this.clients.set(newPeerId, client);
         
         this.log(`Client registered with ID: ${newPeerId}`);
-        
-        // Confirm registration
-        this.sendToClient(client, {
-            type: 'registered',
-            peerId: newPeerId
-        });
+
+        if(!this.waitingClient) {
+            this.waitingClient = client;
+
+            // Confirm registration
+            this.sendToClient(client, {
+                type: 'registered',
+                peerId: newPeerId,
+                offerer: true,
+            });
+        }
+        else {
+            // Confirm registration
+            this.sendToClient(client, {
+                type: 'registered',
+                peerId: newPeerId,
+                offerer: false,
+            });
+
+            this.waitingClient = null;
+        }
         
         // Notify all clients about the new peer
         this.broadcastPeerList();
